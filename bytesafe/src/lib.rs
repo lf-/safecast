@@ -48,7 +48,8 @@ pub fn derive_safecast(item: TokenStream) -> TokenStream {
     let commentless: String = lines.concat();
    
     // Make sure this structure is `#[repr(C)]`
-    assert!(lines.iter().fold(false, |acc, &x| acc | (x == "#[repr(C)]")),
+    assert!(lines.iter().any(|&x| x == "#[repr(C)]" ||
+                                  x == "#[repr(transparent)]"),
         "Structure must be #[repr(C)] for Safecast");
 
     // There has to be at least one line of the form:
@@ -96,7 +97,7 @@ pub fn derive_safecast(item: TokenStream) -> TokenStream {
     } else {
         commentless.splitn(2, &format!("struct {}(", ident)).nth(1).unwrap()
             .splitn(2, ");").nth(0).unwrap()
-    }.replace(" ", "").replace("\t", "");
+    }.replace("pub ", "").replace(" ", "").replace("\t", "");
 
     // For a tuple struct fields should look like:
     // Fields: "u32,u32,usize,u8,usize,usize,u8,usize,usize,u8,usize"
